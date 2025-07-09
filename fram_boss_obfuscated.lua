@@ -1,5 +1,5 @@
 
--- 🔥 FRAM BOSS FULL COMBO MENU - By ChatGPT x Vinh WOKINGLOG 👹
+-- 🔥 FRAM BOSS FULL COMBO MENU - By Vinh WOKINGLOG 👹
 
 local __dJudSGgiPfGP = game:GetService("__dJudSGgiPfGP")
 local __jRZIfh0AkdCG = game:GetService("__jRZIfh0AkdCG")
