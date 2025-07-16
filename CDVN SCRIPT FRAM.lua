@@ -45,6 +45,7 @@ local function zk()
 	end
 end
 
+-- 🔄 Vòng lặp fram boss (đã bỏ gim mặt)
 z2.RenderStepped:Connect(function()
 	if z7 then
 		local zl=zd()
@@ -54,13 +55,14 @@ z2.RenderStepped:Connect(function()
 			z8+=0.04
 			local zm=Vector3.new(math.cos(z8),0,math.sin(z8))*z9
 			local zn=zl.HumanoidRootPart.Position+zm
-			z5.CFrame=CFrame.new(zn,zl.HumanoidRootPart.Position)
+			z5.CFrame=z5.CFrame:Lerp(CFrame.new(zn), 0.3)
 		end
 	end
 end)
 
+-- 🔐 GUI mật khẩu
 local zo=Instance.new("ScreenGui",game.CoreGui)
-zo.Name="GUI_WK"..math.random(100,999)
+zo.Name="GUI_FRAM_WOKING"
 
 local zp=Instance.new("Frame",zo)
 zp.Size=UDim2.new(0,300,0,160)
@@ -98,6 +100,7 @@ zs.BackgroundColor3=Color3.fromRGB(40,140,80)
 zs.TextSize=14
 Instance.new("UICorner",zs).CornerRadius=UDim.new(0,8)
 
+-- 📦 GUI chính
 local zt=Instance.new("Frame",zo)
 zt.Size=UDim2.new(0,240,0,190)
 zt.Position=UDim2.new(0.1,0,0.25,0)
@@ -144,7 +147,7 @@ local zx=Instance.new("TextLabel",zt)
 zx.Size=UDim2.new(1,0,0,20)
 zx.Position=UDim2.new(0,0,1,-20)
 zx.BackgroundTransparency=1
-zx.Text="👑 WOKINGLOG – ANTI COPY 👑"
+zx.Text="👑 WOKINGLOG – MƯỢT KHÔNG GIM 👑"
 zx.Font=Enum.Font.Gotham
 zx.TextColor3=Color3.fromRGB(160,160,160)
 zx.TextSize=12
