@@ -80,8 +80,8 @@ bossHPLabel.Visible = false
 
 -- Tự farm boss
 local angle = 0
-local radius = 18
-local speed = 3.20
+local radius = 19
+local speed = 1.20
 
 RunService.RenderStepped:Connect(function(dt)
     local npc = findNPC(BossName)
