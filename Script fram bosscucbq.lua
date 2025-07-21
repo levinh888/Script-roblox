@@ -7,13 +7,16 @@ local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
 local mouse = player:GetMouse()
+
+-- Chờ nhân vật xuất hiện
 local character = player.Character or player.CharacterAdded:Wait()
 local hrp = character:WaitForChild("HumanoidRootPart")
 local humanoid = character:WaitForChild("Humanoid")
 
-local BossName = "NPC2" -- Đổi tên Boss ở đây nếu cần
+-- Tên Boss cần farm
+local BossName = "NPC2" -- ✅ Đổi tên nếu cần
 
--- UI
+-- UI khởi tạo
 local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Name = "WOKING_UI"
@@ -25,8 +28,7 @@ Frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 Frame.BackgroundTransparency = 0.2
 Frame.BorderSizePixel = 0
 
-local UICorner = Instance.new("UICorner", Frame)
-UICorner.CornerRadius = UDim.new(0, 10)
+Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 10)
 
 local UIListLayout = Instance.new("UIListLayout", Frame)
 UIListLayout.Padding = UDim.new(0, 6)
@@ -34,6 +36,7 @@ UIListLayout.FillDirection = Enum.FillDirection.Vertical
 UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
+-- Hàm tạo Toggle
 function addToggle(text)
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(0, 230, 0, 30)
@@ -44,15 +47,17 @@ function addToggle(text)
     button.TextSize = 14
     button.AutoButtonColor = true
     button.Parent = Frame
+
     local state = false
     button.MouseButton1Click:Connect(function()
         state = not state
         button.Text = (state and "✅ " or "❌ ") .. text
     end)
+
     return function() return state end
 end
 
--- Các nút chức năng
+-- Toggle chức năng
 local isFarmEnabled = addToggle("Farm Boss")
 local isAutoAttack = addToggle("Tự Đánh")
 local isAutoPickup = addToggle("Nhặt Tool/Vật phẩm")
@@ -67,7 +72,7 @@ local function findNPC(name)
     end
 end
 
--- Hiển thị máu boss
+-- Hiển thị HP boss
 local bossHPLabel = Instance.new("TextLabel", ScreenGui)
 bossHPLabel.Size = UDim2.new(0, 200, 0, 30)
 bossHPLabel.Position = UDim2.new(0.5, -100, 0.05, 0)
@@ -78,11 +83,12 @@ bossHPLabel.TextSize = 20
 bossHPLabel.Font = Enum.Font.GothamBold
 bossHPLabel.Visible = false
 
--- Tự farm boss
+-- Biến farm
 local angle = 0
 local radius = 19
 local speed = 1.20
 
+-- Luôn quay mặt về boss khi farm
 RunService.RenderStepped:Connect(function(dt)
     local npc = findNPC(BossName)
     if npc and isFarmEnabled() then
@@ -91,8 +97,10 @@ RunService.RenderStepped:Connect(function(dt)
             angle += speed * dt
             local x = npcHRP.Position.X + math.cos(angle) * radius
             local z = npcHRP.Position.Z + math.sin(angle) * radius
-            local y = npcHRP.Position.Y - 1
-            hrp.CFrame = CFrame.new(Vector3.new(x, y, z))
+            local y = npcHRP.Position.Y
+
+            local newPosition = Vector3.new(x, y, z)
+            hrp.CFrame = CFrame.new(newPosition, npcHRP.Position) -- ✅ Fix: luôn quay mặt về boss
         end
     end
 
@@ -107,16 +115,21 @@ RunService.RenderStepped:Connect(function(dt)
     end
 end)
 
--- Tự đánh nếu có vũ khí
+-- Tự đánh (nếu có tool)
 task.spawn(function()
-    while true do
-        task.wait(0.3)
+    while task.wait(0.3) do
         if isAutoAttack() then
             local tool = player.Character:FindFirstChildOfClass("Tool")
             if tool and tool:FindFirstChild("Handle") then
                 for _, v in pairs(tool:GetDescendants()) do
                     if v:IsA("RemoteEvent") or v:IsA("RemoteFunction") then
-                        pcall(function() v:FireServer() end)
+                        pcall(function()
+                            if v:IsA("RemoteEvent") then
+                                v:FireServer()
+                            elseif v:IsA("RemoteFunction") then
+                                v:InvokeServer()
+                            end
+                        end)
                     end
                 end
                 tool:Activate()
@@ -125,13 +138,12 @@ task.spawn(function()
     end
 end)
 
--- Tự nhặt tool hoặc vật phẩm khi farm
+-- Tự nhặt Tool/Vật phẩm gần
 task.spawn(function()
-    while true do
-        task.wait(1)
+    while task.wait(1) do
         if isAutoPickup() then
             for _, v in pairs(workspace:GetDescendants()) do
-                if v:IsA("Tool") and v:FindFirstChild("Handle") and (v.Position - hrp.Position).Magnitude < 20 then
+                if v:IsA("Tool") and v:FindFirstChild("Handle") and (v.Handle.Position - hrp.Position).Magnitude < 20 then
                     firetouchinterest(hrp, v.Handle, 0)
                     firetouchinterest(hrp, v.Handle, 1)
                 end
