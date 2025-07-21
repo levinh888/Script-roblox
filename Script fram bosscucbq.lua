@@ -91,7 +91,7 @@ RunService.RenderStepped:Connect(function(dt)
             angle += speed * dt
             local x = npcHRP.Position.X + math.cos(angle) * radius
             local z = npcHRP.Position.Z + math.sin(angle) * radius
-            local y = npcHRP.Position.Y + 1.5
+            local y = npcHRP.Position.Y - 1
             hrp.CFrame = CFrame.new(Vector3.new(x, y, z))
         end
     end
