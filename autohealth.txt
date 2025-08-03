@@ -1,0 +1,72 @@
+-- ⚙️ Biến toggle
+local AutoBangGac = false
+local CanUseBandage = true -- chống spam
+
+-- 🩹 Toggle bật tắt auto băng gạc
+Tab:AddToggle("AutoBangGac", {
+    Title = "💉 Auto Băng Gạc (HP < 80)",
+    Default = false,
+    Callback = function(state)
+        AutoBangGac = state
+        Fluent:Notify({
+            Title = "💉 Auto Băng Gạc",
+            Content = state and "Đã bật tự hồi máu khi HP < 40." or "Đã tắt tự hồi máu.",
+            Duration = 3
+        })
+    end
+})
+
+-- 📦 Lấy lại băng gạc nếu mất
+local function GetBackpack(itemName)
+    local success, err = pcall(function()
+        local Knit = game:GetService("ReplicatedStorage"):WaitForChild("KnitPackages")
+            :WaitForChild("_Index"):WaitForChild("sleitnick_knit@1.7.0")
+            :WaitForChild("knit")
+        local RE = Knit.Services.InventoryService.RE.updateInventory
+
+        RE:FireServer("refresh")
+        task.wait(1)
+        RE:FireServer("eue", itemName)
+    end)
+    if not success then
+        warn("❌ Lỗi khi lấy lại băng gạc:", err)
+    end
+end
+
+-- ❤️ Vòng lặp kiểm tra máu và tự dùng băng
+spawn(function()
+    while task.wait(1) do
+        if AutoBangGac and CanUseBandage then
+            local char = game.Players.LocalPlayer.Character
+            local humanoid = char and char:FindFirstChild("Humanoid")
+            local backpack = game.Players.LocalPlayer:FindFirstChild("Backpack")
+
+            if humanoid and humanoid.Health < 80 then
+                CanUseBandage = false -- khóa spam trong vài giây
+
+                -- Lấy băng nếu chưa có
+                if not backpack:FindFirstChild("băng gạc") then
+                    GetBackpack("băng gạc")
+                    task.wait(1.5)
+                end
+
+                -- Dùng băng gạc nếu có
+                if backpack:FindFirstChild("băng gạc") then
+                    local tool = backpack:FindFirstChild("băng gạc")
+                    pcall(function()
+                        tool.Parent = char
+                        task.wait(0.5)
+                        humanoid:EquipTool(tool)
+                        task.wait(0.5)
+                        tool:Activate()
+                    end)
+                end
+
+                -- Chờ cho hồi máu ít nhất lên 70 rồi mới cho dùng tiếp
+                repeat task.wait(1) until humanoid.Health > 100 or not AutoBangGac
+                task.wait(2)
+                CanUseBandage = true
+            end
+        end
+    end
+end)
